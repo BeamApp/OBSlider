@@ -111,6 +111,10 @@
         if ( [self.delegate respondsToSelector:@selector(sliderDidBeginScrubbing:)] ){
             [self.delegate sliderDidBeginScrubbing:self];
         }
+        
+        if ( [self.delegate respondsToSelector:@selector(slider:didChangeScrubbingSpeed:)] ){
+            [self.delegate slider:self didChangeScrubbingSpeed:1];
+        }
     }
     return beginTracking;
 }
