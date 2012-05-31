@@ -27,7 +27,7 @@
 @synthesize scrubbingSpeeds;
 @synthesize scrubbingSpeedChangePositions;
 @synthesize beganTrackingLocation;
-
+@synthesize delegate;
 
 - (void) dealloc
 {
@@ -105,8 +105,12 @@
 										  trackRect:[self trackRectForBounds:self.bounds]
 											  value:self.value];
         self.beganTrackingLocation = CGPointMake(thumbRect.origin.x + thumbRect.size.width / 2.0f, 
-												 thumbRect.origin.y + thumbRect.size.height / 2.0f); 
+												 thumbRect.origin.y + thumbRect.size.height / 2.0f);
         realPositionValue = self.value;
+        
+        if ( [self.delegate respondsToSelector:@selector(sliderDidBeginScrubbing:)] ){
+            [self.delegate sliderDidBeginScrubbing:self];
+        }
     }
     return beginTracking;
 }
@@ -126,7 +130,12 @@
         if (scrubbingSpeedChangePosIndex == NSNotFound) {
             scrubbingSpeedChangePosIndex = [self.scrubbingSpeeds count];
         }
-        self.scrubbingSpeed = [[self.scrubbingSpeeds objectAtIndex:scrubbingSpeedChangePosIndex - 1] floatValue];
+        float newScrubbingSpeed = [[self.scrubbingSpeeds objectAtIndex:scrubbingSpeedChangePosIndex - 1] floatValue];
+        // Delegate call
+        if ( newScrubbingSpeed != self.scrubbingSpeed && [self.delegate respondsToSelector:@selector(slider:didChangeScrubbingSpeed:)]){
+            [self.delegate slider:self didChangeScrubbingSpeed:newScrubbingSpeed];
+        }
+        self.scrubbingSpeed = newScrubbingSpeed;
          
         CGRect trackRect = [self trackRectForBounds:self.bounds];
         realPositionValue = realPositionValue + (self.maximumValue - self.minimumValue) * (trackingOffset / trackRect.size.width);
@@ -155,6 +164,10 @@
     {
         self.scrubbingSpeed = [[self.scrubbingSpeeds objectAtIndex:0] floatValue];
         [self sendActionsForControlEvents:UIControlEventValueChanged];
+        
+        if ( [self.delegate respondsToSelector:@selector(sliderDidEndScrubbing:)] ){
+            [self.delegate sliderDidEndScrubbing:self];
+        }
     }
 }
 
